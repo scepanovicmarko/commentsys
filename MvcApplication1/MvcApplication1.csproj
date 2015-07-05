@@ -630,6 +630,7 @@
     <Content Include="Content\kendo\2015.2.624\fonts\DejaVu\DejaVuSerif.ttf" />
     <Content Include="Content\kendo\2015.2.624\images\kendoui.ttf" />
     <Content Include="Content\kendo\2015.2.624\images\kendoui.woff" />
+    <None Include="Properties\PublishProfiles\commentsys.pubxml" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Images\addcomment.png" />
     <Content Include="Images\cancelpost.png" />
@@ -805,7 +806,6 @@
     </Content>
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\_references.js" />
-    <Content Include="Images\bullet.png" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />

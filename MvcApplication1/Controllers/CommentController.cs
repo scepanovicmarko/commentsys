@@ -23,7 +23,7 @@ namespace MvcApplication1.Controllers
             {
                 try
                 {
-                    IEnumerable<Comment> comments = session.QueryOver<Comment>().OrderBy(p => p.lft).Desc.List();
+                    IList<Comment> comments = session.QueryOver<Comment>().OrderBy(p => p.lft).Desc.List();
 
                     return comments;
                 }
@@ -65,7 +65,7 @@ namespace MvcApplication1.Controllers
             }
         }
 
-        // to demonstrate on of RESTs . Used for adding comments
+        // to demonstrate on of REST post verb. Used for adding comments
         [HttpPost]
         [POST("Add")]
         public HttpResponseMessage Add([FromBody]CommentInputParrams newValues)
@@ -260,7 +260,8 @@ namespace MvcApplication1.Controllers
                
                 HttpContextWrapper context = (HttpContextWrapper)Request.Properties["MS_HttpContext"];
 
-                int lft = (int)session.CreateCriteria<Comment>().SetProjection(Projections.Max("rgt")).UniqueResult();
+                var max = session.CreateCriteria<Comment>().SetProjection(Projections.Max("rgt")).UniqueResult();
+                int lft = max == null?0:(int)max;
                
                 newComment.Text = text;
                 newComment.lft = lft + 1;

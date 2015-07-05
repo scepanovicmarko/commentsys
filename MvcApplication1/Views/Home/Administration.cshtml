@@ -23,9 +23,6 @@ Here you can:
     <li> Remove belonging comments. </li>
 </ul>
 
-
-
-
 <div id="example">
     <div id="treelist"></div>
 
@@ -33,7 +30,6 @@ Here you can:
        
         $(document).ready(function () {
             var crudServiceBaseUrl = location.origin;//http://demos.telerik.com/kendo-ui/service
-
             //
             //http://demos.telerik.com/kendo-ui/service/EmployeeDirectory/All
             var dataSource = new kendo.data.TreeListDataSource({
@@ -60,7 +56,7 @@ Here you can:
                         }
                     }
                 },
-                //batch: true,
+                batch: true,
                 schema: {
                     model: {
                         id: "CommentId",

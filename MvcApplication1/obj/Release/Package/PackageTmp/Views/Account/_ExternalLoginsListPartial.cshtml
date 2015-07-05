@@ -1,0 +1,29 @@
+﻿@model ICollection<AuthenticationClientData>
+
+@if (Model.Count == 0)
+{
+    <div class="message-info">
+        <p>
+            There are no external authentication services configured.
+        </p>
+    </div>
+}
+else
+{
+    using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl }))
+    {
+        @Html.AntiForgeryToken()
+        <fieldset id="socialLoginList">
+            <legend>Log in using another service</legend>
+            <p>
+                @foreach (AuthenticationClientData p in Model)
+                {
+                    <button id="provider" type="submit" name="provider" value="@p.AuthenticationClient.ProviderName" title="Log in using your @p.DisplayName account" hidden="hidden">
+                        <img src="@p.ExtraData["Icon"]" alt="Icon for @p.DisplayName" />
+                    </button>
+                    <img src="@p.ExtraData["Icon"]" onclick="document.getElementById('provider').click();" style="cursor: pointer; border-radius: 3px;" />
+                }
+            </p>
+        </fieldset>
+    }
+}

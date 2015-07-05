@@ -1,0 +1,26 @@
+﻿@model IList<MvcApplication1.Models.Comment>
+@{
+    ViewBag.Title = "News";
+}
+    <section class="featured">
+        <div class="content-wrapper">
+            <ul>
+                @foreach (MvcApplication1.Models.Comment p in Model)
+                {
+                    <li>@Html.ActionLink(p.Text, "Comments", "Home", new { news = p.CommentId }, null)</li>
+                }
+            </ul>
+
+
+            
+            @if (Request.IsAuthenticated)
+            {
+
+            }
+            else
+            {
+               
+            }
+        </div>
+    </section>
+

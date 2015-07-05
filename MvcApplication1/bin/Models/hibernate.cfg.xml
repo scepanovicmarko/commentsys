@@ -8,7 +8,7 @@
       NHibernate.Driver.SqlClientDriver
     </property>
     <property name="connection.connection_string">
-      Data Source=(LocalDb)\v11.0;Initial Catalog=aspnet-MvcApplication1-20150630131419;Integrated Security=SSPI;AttachDBFilename=|DataDirectory|\aspnet-MvcApplication1-20150630131419.mdf;
+      Server=213.136.87.169;Database=aspnet-MvcApplication1-20150630131419;User Id=mvc_admin;Password=mvc12345;
     </property>
     <property name="dialect">
       NHibernate.Dialect.MsSql2012Dialect
