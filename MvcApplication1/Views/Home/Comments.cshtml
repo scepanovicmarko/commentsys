@@ -1,0 +1,389 @@
+﻿@model IList<MvcApplication1.Models.Comment>
+
+@{
+    ViewBag.Title = "Comments";
+    ViewBag.ReturnUrl = Request.Url.PathAndQuery;
+}
+
+<style>
+    .demo-section {
+        background: lightgray none repeat scroll 0 0;
+        border: 1px solid lavenderblush;
+        margin-top: 10px;
+        padding: 10px;
+    }
+
+    .comment-text {
+        /*padding-left: 10px;*/
+    }
+
+
+
+    .comment-reply-to {
+        color: red;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .comment-date {
+        font-size: 11px;
+    }
+
+    .gray-separator {
+        background-color: gray;
+        height: 1px;
+        position: relative;
+    }
+
+    #sub-left {
+        float: left;
+    }
+
+    #sub-right {
+        float: right;
+    }
+
+    .clear-both {
+        clear: both;
+    }
+
+    .margin-leftX {
+        margin-left: 10px;
+    }
+
+    .commnet-replay {
+        margin-top: 5px;
+        padding-top: 5px;
+        border-top: 1px solid gray;
+        display: none;
+    }
+
+    .comment-person {
+        font-size: 17px;
+        color: InactiveCaptionText;
+    }
+
+    .fb-image-button {
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .k-button .k-image {
+        height: 16px;
+        margin-top: 2px;
+    }
+
+    .k-button {
+        font-weight: bold;
+        color: black;
+        margin-top: 5px;
+    }
+
+    .comment-approval {
+        padding-top: 5px;
+    }
+
+    .comment-approval-inactive {
+        padding-top: 5px;
+        cursor: text !important;
+    }
+
+    #sub-left > span {
+        bottom: 0;
+        position: relative;
+    }
+
+    #sub-left > img {
+        bottom: -6px;
+        position: relative;
+        cursor: pointer;
+    }
+</style>
+
+<hgroup class="title">
+    <h1 id="ovde_ide_root_comment_id">@Model[0].Text</h1>
+</hgroup>
+
+@if (Context.User.Identity.IsAuthenticated)
+{
+    @(Html.Kendo().Button()
+        .Name("btn_" + @Model[0].CommentId.ToString())
+        .HtmlAttributes(new { type = "button", style = "margin-left: 10px;" })
+        .ImageUrl(Url.Content("/Images/addcomment.png"))
+        .Content("Add comment")
+    )
+    @(Html.Kendo().Button()
+        .Name("cbtn_" + Model[0].CommentId.ToString())
+        .HtmlAttributes(new { type = "button", style = "display:none;margin-left: 10px;" })
+        .ImageUrl(Url.Content("/Images/cancelpost.png"))
+        .Content("Cancel post")
+    )
+    <div id="pnl_@Model[0].CommentId" class="commnet-replay" style="margin-left: 10px; width: 562px;">
+
+        @using (Html.BeginForm("Comment", "Api", FormMethod.Post, new { id = Model[0].CommentId }))
+        {
+            <input name="CommentId" value="@Model[0].CommentId" hidden="hidden" />
+            <input type="text" name="Name" id="name_@Model[0].CommentId" value="-1" hidden="hidden" />
+            <strong>Comment:</strong>
+            <textarea rows="7" id="text_@Model[0].CommentId" name="Text" value=""></textarea>
+
+            <div id="sub-title">
+                <div id="sub-left">
+                    @if (!Context.User.Identity.IsAuthenticated)
+                    {
+                        <img src="/Images/fb.png" onclick="document.getElementById('provider').click();" class="fb-image-button" />
+                    }
+                </div>
+                <div id="sub-right">
+                    @(Html.Kendo().Button()
+                                .Name("post_" + Model[0].CommentId.ToString())
+                                .HtmlAttributes(new { type = "button" })
+                                .ImageUrl(Url.Content("/Images/comment.png"))
+                                .Content("Comment")
+                    )
+
+                </div>
+                <div class="clear-both"></div>
+            </div>
+            <script>
+                $(document).ready(function () {
+
+                    $("#btn_@Model[0].CommentId.ToString()").click(function () {
+                        replyToComment('pnl_@Model[0].CommentId.ToString()', this, 'cbtn_@Model[0].CommentId.ToString()');
+                    });
+
+                    $("#cbtn_@Model[0].CommentId.ToString()").click(function () {
+                        cancelReplyToComment('pnl_@Model[0].CommentId.ToString()', this, 'btn_@Model[0].CommentId.ToString()');
+                    });
+
+                    $("#post_@Model[0].CommentId.ToString()").click(function () {
+                        addComment(@Model[0].CommentId);
+                    });
+
+                });
+            </script>
+        }
+    </div>
+}
+else
+{
+    ICollection<AuthenticationClientData> col = OAuthWebSecurity.RegisteredClientData;
+
+    using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl }))
+    {
+        @Html.AntiForgeryToken()
+
+        foreach (AuthenticationClientData pp in col)
+        {
+            <button id="provider" type="submit" name="provider"
+                    value="@pp.AuthenticationClient.ProviderName"
+                    title="Log in using your @pp.DisplayName account" hidden="hidden"></button>
+        }
+        <p class="margin-leftX">
+            To comment, you must be @Html.ActionLink("logged in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" }).
+            <br />
+            If you don't have an account you can register @Html.ActionLink("here", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" }).
+        </p>
+
+    }
+
+}
+
+@foreach (MvcApplication1.Models.Comment p in Model)
+{
+
+    if (p.indent > 0)
+    {
+        <div id="div_@p.CommentId" class="demo-section" style="margin-left: @((p.indent * 10).ToString() + "px; width:" + (550 - p.indent * 10).ToString() + "px");">
+
+            @using (Html.BeginForm("Comment", "Api", FormMethod.Post, new { id = p.CommentId }))
+            {
+                <h3>
+                    <input name="CommentId" value="@p.CommentId" hidden="hidden" />
+                    <span class="comment-person">
+                        @p.CommenterName
+                    </span> <br />
+                    <span class="comment-date">
+                        @(p.CreationDate.ToString("dddd, dd.MM.yyyy HH:mm") + "h")
+                        @if (p.Creator == null)
+                        {
+                            <br /><span>unregistered user</span>
+                        }
+                    </span>
+                </h3>
+                <p class="comment-text">
+                    <span onclick="scrollToParent(@p.ParentCommentId.ToString())" class="comment-reply-to">
+                        @((p.indent > 1) ? "@" + p.ParentCommenterName + ":":"")
+                    </span>
+                    @p.Text
+                </p>
+                <div class="gray-separator"></div>
+                <div>
+                    <div id="sub-title">
+                        <div id="sub-left">
+                            <span>
+                                <b>Approvals:</b>
+                                <span id="stu_@p.CommentId"> @p.ThumbUpCount.ToString() </span>
+                            </span>
+
+                            <img src="/Images/thumb_up.png" class="comment-approval" id="imgUp_@p.CommentId" onclick="thumbUp('@p.CommentId')" />
+
+                            <span id="std_@p.CommentId">
+                                @p.ThumbDownCount.ToString()
+                            </span>
+
+                            <img src="/Images/thumb_down.png" class="comment-approval" id="imgDown_@p.CommentId" onclick="thumbDown('@p.CommentId')" />
+
+                        </div>
+                        <div id="sub-right">
+                            @(Html.Kendo().Button()
+                                .Name("btn_" + p.CommentId.ToString())
+                                .HtmlAttributes(new { type = "button" })
+                                .ImageUrl(Url.Content("/Images/reply.png"))
+                                .Content("Post reply")
+                            )
+
+                            @(Html.Kendo().Button()
+                                .Name("cbtn_" + p.CommentId.ToString())
+                                .HtmlAttributes(new { type = "button", style = "display:none;" })
+                                .ImageUrl(Url.Content("/Images/cancelpost.png"))
+                                .Content("Cancel post")
+                            )
+
+                        </div>
+                        <div class="clear-both"></div>
+                    </div>
+                </div>
+                <div id="pnl_@p.CommentId" class="commnet-replay">
+
+                    @if (!Context.User.Identity.IsAuthenticated)
+                    {
+                        <strong>Name:</strong><br />
+                        <input type="text" name="Name" id="name_@p.CommentId" value="" />
+                    }
+                    else
+                    {
+                        <input type="text" name="Name" id="name_@p.CommentId" value="-1" hidden="hidden" />
+                    }
+
+                    <strong>Comment:</strong>
+                    <textarea rows="7" id="text_@p.CommentId" name="Text" value=""></textarea>
+
+                    <div id="sub-title">
+                        <div id="sub-left">
+                            @if (!Context.User.Identity.IsAuthenticated)
+                            {
+                                <img src="/Images/fb.png" onclick="document.getElementById('provider').click();" class="fb-image-button" />
+                            }
+                        </div>
+                        <div id="sub-right">
+                            @(Html.Kendo().Button()
+                                .Name("post_" + p.CommentId.ToString())
+                                .HtmlAttributes(new { type = "button" })
+                                .ImageUrl(Url.Content("/Images/comment.png"))
+                                .Content("Comment")
+                            )
+                        </div>
+                        <div class="clear-both"></div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <script>
+
+            $(document).ready(function () {
+
+                $("#btn_@p.CommentId.ToString()").click(function () {
+                    replyToComment('pnl_@p.CommentId.ToString()', this, 'cbtn_@p.CommentId.ToString()');
+                });
+
+                $("#cbtn_@p.CommentId.ToString()").click(function () {
+                    cancelReplyToComment('pnl_@p.CommentId.ToString()', this, 'btn_@p.CommentId.ToString()');
+                });
+
+                $("#post_@p.CommentId.ToString()").click(function () {
+                    addComment(@p.CommentId);
+                });
+
+            });
+
+        </script>
+    }
+
+}
+
+@section scripts{
+    <script type="text/javascript">
+
+        function scrollToParent(parentElementName) {
+            var element_to_scroll_to = document.getElementById(parentElementName);
+            element_to_scroll_to.scrollIntoView();
+        };
+
+        function replyToComment(commentPanel, caller, cancelButton) {
+
+            var elm = document.getElementById(commentPanel);
+            elm.style.display = 'block';
+            document.getElementById(cancelButton).style.display = 'block';
+            caller.style.display = 'none';
+
+        };
+
+        function cancelReplyToComment(commentPanel, caller, commentButton) {
+            document.getElementById(commentPanel).style.display = 'none';
+            caller.style.display = 'none';
+            document.getElementById(commentButton).style.display = 'block';
+            $(commentPanel.replace('pnl_', '#text_')).val("");
+            var nameTextField = $(commentPanel.replace('pnl_', '#name_'));
+            if (nameTextField.val() != '-1') nameTextField.val("");
+        };
+
+        function thumbUp(commentId) {
+
+            $.getJSON('/api/comment/thumb?commentId=' + commentId + '&isUp=true', function (response) {
+                if ('e' === response.substr(0, 1))
+                    alert(response);
+                else {
+                    var str = '#stu_' + commentId;
+                    $(str).html(response);
+                    replaceApprovalImages(commentId);
+                }
+            });
+
+        }
+
+        function thumbDown(commentId) {
+
+            $.getJSON('/api/comment/thumb?commentId=' + commentId + '&isUp=false', function (response) {
+                if ('e' === response.substr(0, 1))
+                    alert(response);
+                else {
+                    var str = '#std_' + commentId;
+                    $(str).html(response);
+
+                    replaceApprovalImages(commentId);
+                }
+            });
+        }
+
+        function replaceApprovalImages(commentId) {
+            $('#imgUp_' + commentId).replaceWith('<img src="/Images/thumbupgray.png" class="comment-approval-inactive" />');
+
+            $('#imgDown_' + commentId).replaceWith('<img src="/Images/thumbdowngray.png" class="comment-approval-inactive" />');
+        }
+
+        function addComment(commentId) {
+            var str = '#' + commentId;
+            $.post("/api/comment/Add", $(str).serialize(), function (value) {
+                // if status =error
+
+                //here I should use template and create comment using JS. In the lack of time, i will reload entire tree
+                location.reload();
+
+            }, "json");
+
+        }
+
+    </script>
+}

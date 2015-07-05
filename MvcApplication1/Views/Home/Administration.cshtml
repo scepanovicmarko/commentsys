@@ -1,0 +1,94 @@
+﻿@{
+    ViewBag.Title = "Administration";
+}
+
+<style>
+    .main-content {
+        background: rgba(0, 0, 0, 0) url("../Images/accent.png") no-repeat scroll 0 0;
+        padding:14px;
+    }
+
+    .content-wrapper {
+        margin: 0 auto;
+        max-width: 1160px;
+    }
+
+</style>
+
+
+<h2>Administration panel</h2>
+Here you can:
+<ul>
+    <li> Add new post,blog or news. </li>
+    <li> Remove belonging comments. </li>
+</ul>
+
+
+
+
+<div id="example">
+    <div id="treelist"></div>
+
+    <script>
+       
+        $(document).ready(function () {
+            var crudServiceBaseUrl = location.origin;//http://demos.telerik.com/kendo-ui/service
+
+            //
+            //http://demos.telerik.com/kendo-ui/service/EmployeeDirectory/All
+            var dataSource = new kendo.data.TreeListDataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl + "/api/comment/All",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: crudServiceBaseUrl + "api/comment/Update",
+                        dataType: "json"
+                    },
+                    destroy: {
+                        url: crudServiceBaseUrl + "/api/comment/Destroy",
+                        dataType: "json"
+                    },
+                    create: {
+                        url: crudServiceBaseUrl + "/api/comment/Create",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, operation) {
+                        if (operation !== "read" && options.models) {
+                            return { models: kendo.stringify(options.models) };
+                        }
+                    }
+                },
+                //batch: true,
+                schema: {
+                    model: {
+                        id: "CommentId",
+                        fields: {
+                            CommentId: { type: "number", editable: false, nullable: false },
+                            parentId: { field: "ParentCommentId", nullable: true },
+                            CommenterName: { validation: { required: false }, editable: false },
+                            Text: { validation: { required: true }, editable: true },
+                            CreationDate: { type: "date", editable: false }
+                        },
+                        expanded: true
+                    }
+                }
+            });
+
+            $("#treelist").kendoTreeList({
+                dataSource: dataSource,
+                sortable: true,
+                filterable: true,
+                toolbar: [{ name: "create", text: "Add News" }],
+                editable: "inline",
+                columns: [
+                    { field: "CommenterName", expandable: true, title: "Author", width: 250 },
+                    { field: "Text", title: "Text", minWidth:400},
+                    { field: "CreationDate", title: "Date", format: "{0:d MMMM yyyy hh:mm}", width: 150 },
+                    { command: ["destroy"], width: 210 } ]
+            });
+        });
+    </script>
+
+</div>
